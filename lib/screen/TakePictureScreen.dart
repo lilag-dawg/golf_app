@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -37,9 +36,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
       if (!mounted) {
         return;
       }
-      _controller.startImageStream((image) {
-        print(image.format);
-      });
+      _controller.startImageStream((image) => _processCameraImageStream(image));
     });
   }
 
@@ -48,6 +45,10 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     // Dispose of the controller when the widget is disposed.
     _controller.dispose();
     super.dispose();
+  }
+
+  void _processCameraImageStream(CameraImage image) {
+    //print(image.format);
   }
 
   @override
@@ -62,7 +63,15 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             // If the Future is complete, display the preview.
-            return CameraPreview(_controller);
+            print(MediaQuery.of(context)
+                .orientation); // todo link phone orientation with camera orientation
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                CameraPreview(_controller),
+                Text("waddup"),
+              ],
+            );
           } else {
             // Otherwise, display a loading indicator.
             return Center(child: CircularProgressIndicator());
