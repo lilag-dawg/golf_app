@@ -10,10 +10,8 @@ import 'package:image/image.dart' as imglib;
 
 import 'ImagePreview.dart';
 
-typedef convert_func = Pointer<Uint32> Function(
-    Pointer<Uint8>, Pointer<Uint8>, Pointer<Uint8>, Int32, Int32, Int32, Int32);
-typedef Convert = Pointer<Uint32> Function(
-    Pointer<Uint8>, Pointer<Uint8>, Pointer<Uint8>, int, int, int, int);
+typedef convert_func = Pointer<Uint32> Function(Pointer<Uint8>, Int32, Int32);
+typedef Convert = Pointer<Uint32> Function(Pointer<Uint8>, int, int);
 
 class TakePictureScreen extends StatefulWidget {
   final CameraDescription camera;
@@ -36,7 +34,8 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   final DynamicLibrary convertImageLib = Platform.isAndroid
       ? DynamicLibrary.open("libconvertImage.so")
       : DynamicLibrary.process();
-  Convert conv;
+  //Convert yuvTOrgb;
+  Convert yuvTOgrayscale;
 
   @override
   void initState() {
@@ -47,12 +46,12 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
       // Get a specific camera from the list of available cameras.
       widget.camera,
       // Define the resolution to use.
-      ResolutionPreset.high,
+      ResolutionPreset.veryHigh,
     );
 
     // Load the convertImage() function from the library
-    conv = convertImageLib
-        .lookup<NativeFunction<convert_func>>('convertImage')
+    yuvTOgrayscale = convertImageLib
+        .lookup<NativeFunction<convert_func>>('yuvTOgrayscale')
         .asFunction<Convert>();
 
     // Next, initialize the controller. This returns a Future.
@@ -109,7 +108,9 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
         onPressed: () async {
           // Take the Picture in a try / catch block. If anything goes wrong,
           // catch the error.
+
           try {
+            Stopwatch stopwatch = Stopwatch()..start();
             Pointer<Uint8> p = calloc(_savedImage.planes[0].bytes.length);
             Pointer<Uint8> p1 = calloc(_savedImage.planes[1].bytes.length);
             Pointer<Uint8> p2 = calloc(_savedImage.planes[2].bytes.length);
@@ -128,15 +129,9 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
             pointerList2.setRange(0, _savedImage.planes[2].bytes.length,
                 _savedImage.planes[2].bytes);
 
-            // Call the convertImage function and convert the YUV to RGB
-            Pointer<Uint32> imgP = conv(
-                p,
-                p1,
-                p2,
-                _savedImage.planes[1].bytesPerRow,
-                _savedImage.planes[1].bytesPerPixel,
-                _savedImage.planes[0].bytesPerRow,
-                _savedImage.height);
+            // Call the convertImage function and convert the YUV to grayscale
+            Pointer<Uint32> imgP = yuvTOgrayscale(
+                p, _savedImage.planes[0].bytesPerRow, _savedImage.height);
             List imgData =
                 imgP.asTypedList((_savedImage.width * _savedImage.height));
 
@@ -144,6 +139,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
             imglib.Image img = imglib.Image.fromBytes(
                 _savedImage.height, _savedImage.width, imgData);
 
+            print("4 =====> ${stopwatch.elapsedMilliseconds}");
             // Free the memory space allocated
             // from the planes and the converted data
             calloc.free(p);

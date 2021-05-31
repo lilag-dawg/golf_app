@@ -7,4 +7,5 @@ add_library( convertImage
              SHARED
 
              # Provides a relative path to your source file(s).
-             ../ios/Classes/converter.c )
+             ../ios/Classes/converter.c 
+             ../ios/Classes/imgProcessing.c )

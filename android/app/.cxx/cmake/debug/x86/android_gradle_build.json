@@ -24,6 +24,11 @@
           "src": "C:\\Users\\alexi\\Desktop\\Projet\\golfApp\\app\\golf_app\\ios\\Classes\\converter.c",
           "flagsOrdinal": 1,
           "workingDirectoryOrdinal": 0
+        },
+        {
+          "src": "C:\\Users\\alexi\\Desktop\\Projet\\golfApp\\app\\golf_app\\ios\\Classes\\imgProcessing.c",
+          "flagsOrdinal": 1,
+          "workingDirectoryOrdinal": 0
         }
       ],
       "headers": [],

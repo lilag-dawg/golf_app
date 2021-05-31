@@ -16,8 +16,8 @@ int getRotatedImageByteIndex(int x, int y, int rotatedImageWidth){
     return rotatedImageWidth*(y+1)-(x+1);
 }
 
-uint32_t *convertImage(uint8_t *plane0, uint8_t *plane1, uint8_t *plane2, int bytesPerRow, int bytesPerPixel, int width, int height){
-     int hexFF = 255;
+uint32_t *yuvTOrgb(uint8_t *plane0, uint8_t *plane1, uint8_t *plane2, int bytesPerRow, int bytesPerPixel, int width, int height){
+    int hexFF = 255;
     int x, y, uvIndex, index;
     int yp, up, vp;
     int r, g, b;
@@ -41,6 +41,24 @@ uint32_t *convertImage(uint8_t *plane0, uint8_t *plane1, uint8_t *plane2, int by
             g = clamp(0, 255, gt);
             b = clamp(0, 255, bt);
             image[getRotatedImageByteIndex(y, x, height)] = (hexFF << 24) | (b << 16) | (g << 8) | r;
+        }
+    }
+    return image;
+}
+
+uint32_t *yuvTOgrayscale(uint8_t *plane0, int width, int height){
+    int opac = 255;
+    int x, y, luminosity, index;
+
+    uint32_t *image = malloc(sizeof(uint32_t) * (width * height));
+
+    for(x = 0; x < width; x++){
+        for(y = 0; y < height; y++){
+            index = y*width+x;
+            luminosity = plane0[index];
+
+            // here grayscale is in rgb format (because to format used to print the image has to be 32 bits...)
+            image[getRotatedImageByteIndex(y, x, height)] = (opac << 24) | (luminosity << 16) | (luminosity << 8) | luminosity; 
         }
     }
     return image;
